@@ -21,42 +21,12 @@ pipeline {
         }
         
 
-  stage('Docker Build and Tag') {
-           steps {
-              
-                sh 'docker build -t samplewebapp:latest .' 
-                sh 'docker tag samplewebapp nikhilnidhi/samplewebapp:latest'
-                //sh 'docker tag samplewebapp nikhilnidhi/samplewebapp:$BUILD_NUMBER'
-               
-          }
-        }
-     
-  stage('Publish image to Docker Hub') {
-          
-            steps {
-        withDockerRegistry([ credentialsId: "dockerHub", url: "" ]) {
-          sh  'docker push nikhilnidhi/samplewebapp:latest'
-        //  sh  'docker push nikhilnidhi/samplewebapp:$BUILD_NUMBER' 
-        }
-                  
-          }
-        }
-     
-      stage('Run Docker container on Jenkins Agent') {
-             
-            steps 
-			{
-                sh "docker run -d -p 8003:8080 nikhilnidhi/samplewebapp"
- 
-            }
-        }
- stage('Run Docker container on remote hosts') {
-             
-            steps {
-                sh "docker -H ssh://jenkins@172.31.28.25 run -d -p 8003:8080 nikhilnidhi/samplewebapp"
- 
+  stage("maven build"){
+@@ -27,6 +28,7 @@ pipeline{
+                //plugin deply on container
+                deploy adapters: [tomcat9(credentialsId: '3c2d8288-2802-49e4-8838-668f97bc15f2', path: '', url: 'http://192.168.0.108:8080')], contextPath: '/app', war: '**/*.war'
+                echo "Deploy Build"
+                slackSend channel: 'testing', message: 'Job ended'
             }
         }
     }
-	}
-    
